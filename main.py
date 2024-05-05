@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 """
 #p1
@@ -335,8 +334,6 @@ plt.show()
 """
 # p7
 
-=======
->>>>>>> 4b0308c (05-05-2024)
 import pandas as pd
 import numpy as np
 import re
@@ -400,10 +397,7 @@ rules = association_rule_mining()
 print("Association Rules:")
 print(rules[['antecedents', 'consequents', 'support', 'confidence']])
 
-<<<<<<< HEAD
 
 
 
 """
-=======
->>>>>>> 4b0308c (05-05-2024)
