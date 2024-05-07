@@ -1,7 +1,6 @@
 import RPi.GPIO as GPIO
 import time
 
-# GPIO pin setup
 GPIO.setmode(GPIO.BOARD)
 ldr_pin = 7  
 red_led_pin = 11 
@@ -19,7 +18,6 @@ def read_ldr(ldr_pin):
     GPIO.output(ldr_pin, False)
     time.sleep(delay_time)
     GPIO.setup(ldr_pin, GPIO.IN)
-    # Count until the pin goes high
     while (GPIO.input(ldr_pin) == 0):
         count += 1
     return count
@@ -36,7 +34,7 @@ try:
             print("Light is bright")
             GPIO.output(red_led_pin, False)
             GPIO.output(green_led_pin, True)
-        time.sleep(1)  # Delay for a second
+        time.sleep(1) 
 
 except KeyboardInterrupt:
     pass
