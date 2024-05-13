@@ -1,0 +1,74 @@
+
+
+
+
+
+db.createCollection("movies");
+db.movies.insertMany([
+  {
+    "actor_name": "John",
+    "actor_id": 1,
+    "actor_birthdate": "1985-05-01",
+    "director_name": "Ram",
+    "director_id": 101,
+    "director_birthdate": "1970-03-15",
+    "film_title": "Action Thriller",
+    "year_of_production": 2018,
+    "type": "Thriller"
+  },
+  {
+    "actor_name": "Elly",
+    "actor_id": 2,
+    "actor_birthdate": "1990-07-10",
+    "director_name": "Ram",
+    "director_id": 101,
+    "director_birthdate": "1970-03-15",
+    "film_title": "Romantic Comedy",
+    "year_of_production": 2012,
+    "type": "Comedy"
+  },
+  {
+    "actor_name": "Ram",
+    "actor_id": 3,
+    "actor_birthdate": "1970-03-15",
+    "director_name": "Sita",
+    "director_id": 102,
+    "director_birthdate": "1975-06-20",
+    "film_title": "Drama Story",
+    "year_of_production": 2015,
+    "type": "Drama"
+  }
+]);
+
+
+
+db.movies.find(
+  { actor_name: "John", year_of_production: 2018 },
+  { film_title: 1, _id: 0 }
+);
+
+
+db.movies.find(
+  { director_name: "Ram" },
+  { actor_name: 1, type: 1, _id: 0 }
+);
+
+
+
+db.movies.find(
+  {
+    actor_name: { $in: ["John", "Elly"] },
+    year_of_production: 2012
+  },
+  { film_title: 1, _id: 0 }
+);
+
+
+
+db.movies.find(
+  { actor_name: "Ram" },
+  { film_title: 1, type: 1, _id: 0 }
+).sort({ film_title: 1 });
+
+
+
