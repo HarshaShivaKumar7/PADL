@@ -69,7 +69,7 @@ db.restaurants.insertMany([
 
 
 
- List the name and address of all restaurants in Bangalore with Italian cuisine 
+//  List the name and address of all restaurants in Bangalore with Italian cuisine 
 
 db.restaurants.find(
     {
@@ -83,8 +83,8 @@ db.restaurants.find(
     }
 )
 
- List the name, address and nearby landmarks of all restaurants in Bangalore 
-where north Indianthali is available. 
+//  List the name, address and nearby landmarks of all restaurants in Bangalore 
+// where north Indianthali is available. 
 
 db.restaurants.find(
     {
@@ -99,8 +99,8 @@ db.restaurants.find(
     }
 )
 
- List the name, address and nearby landmarks of all restaurants in Bangalore 
-where north Indian thali is available 
+//  List the name, address and nearby landmarks of all restaurants in Bangalore 
+// where north Indian thali is available 
 
 db.restaurants.find(
     {
@@ -115,8 +115,8 @@ db.restaurants.find(
     }
 )
 
- List the name and address of restaurants and also the dish the restaurant is 
-famous for, in Bangalore. 
+//  List the name and address of restaurants and also the dish the restaurant is 
+// famous for, in Bangalore. 
 
 db.restaurants.find(
     {
@@ -131,8 +131,8 @@ db.restaurants.find(
 )
 
 
- List the name, address and nearby landmarks of all restaurants in Bangalore 
-where north Indian thali is available. 
+//  List the name, address and nearby landmarks of all restaurants in Bangalore 
+// where north Indian thali is available. 
 
 db.restaurants.find(
     {
@@ -147,8 +147,8 @@ db.restaurants.find(
     }
 )
 
- List the name and address of restaurants and also the dish the restaurant is 
-famous for, in Bangalore where online delivery is available
+//  List the name and address of restaurants and also the dish the restaurant is 
+// famous for, in Bangalore where online delivery is available
 
 db.restaurants.find(
     {
@@ -327,7 +327,7 @@ db.tourist_places.insertMany([
     }
 ])
 
- List all the tourist places of Karnataka 
+//  List all the tourist places of Karnataka 
 
 db.tourist_places.find(
     {
@@ -339,7 +339,7 @@ db.tourist_places.find(
     }
 )
 
- List the tourist attractions of Kerala. Exclude accommodation and food 
+//  List the tourist attractions of Kerala. Exclude accommodation and food 
 
 db.tourist_places.find(
     {
@@ -353,7 +353,7 @@ db.tourist_places.find(
 )
 
 
- List the places sorted state wise 
+//  List the places sorted state wise 
 
 db.tourist_places.aggregate([
     {
@@ -410,9 +410,9 @@ db.movies.insertMany([
 ]);
  
 
- Queries: 
+//  Queries: 
 
-1. List all the movies acted by John in the year 2018:
+// 1. List all the movies acted by John in the year 2018:
 
   
 db.movies.find(
@@ -421,7 +421,7 @@ db.movies.find(
 );
  
 
-2. List only the actors' names and type of the movie directed by Ram:
+// 2. List only the actors' names and type of the movie directed by Ram:
 
   
 db.movies.find(
@@ -430,7 +430,7 @@ db.movies.find(
 );
  
 
-3. List all the movies acted by John and Elly in the year 2012:
+// 3. List all the movies acted by John and Elly in the year 2012:
 
   
 db.movies.find(
@@ -439,7 +439,7 @@ db.movies.find(
 );
  
 
-4. List only the name and type of the movie where Ram has acted, sorted by movie names:
+// 4. List only the name and type of the movie where Ram has acted, sorted by movie names:
 
   
 db.movies.find(
