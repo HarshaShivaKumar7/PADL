@@ -585,28 +585,102 @@ accounts.
 
 
 
+-- Create tables
+CREATE TABLE Account (
+    account_number INT PRIMARY KEY,
+    type VARCHAR(255),
+    balance DECIMAL(10,2),
+    last_transaction_date DATE
+);
 
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255)
+);
 
+CREATE TABLE CustomerAccount (
+    customer_id INT,
+    account_number INT,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (account_number) REFERENCES Account(account_number),
+    PRIMARY KEY (customer_id, account_number)
+);
 
+-- Insert tuples
+INSERT INTO Account (account_number, type, balance, last_transaction_date) VALUES
+(1, 'Savings', 15000.00, '2024-05-01'),
+(2, 'Checking', 8000.00, '2024-05-03');
 
+INSERT INTO Customer (customer_id, name, street, city, state) VALUES
+(1, 'John Doe', '123 Main St', 'Anytown', 'Anystate'),
+(2, 'Jane Smith', '456 Elm St', 'Othertown', 'Otherstate');
 
+INSERT INTO CustomerAccount (customer_id, account_number) VALUES
+(1, 1),
+(2, 1),
+(1, 2),
+(2, 2);
 
+-- Query c
+UPDATE Account
+SET balance = balance * 1.03
+WHERE balance < 10000;
 
+UPDATE Account
+SET balance = balance * 1.06
+WHERE balance >= 10000;
 
+-- Query d
+SELECT ca.account_number, COUNT(ca.customer_id) AS num_customers
+FROM CustomerAccount ca
+GROUP BY ca.account_number
+HAVING COUNT(ca.customer_id) > 3;
 
+-- Trigger e
+CREATE TRIGGER CheckLastTransactionDate
+BEFORE INSERT ON Account
+FOR EACH ROW
+BEGIN
+    IF NEW.last_transaction_date != CURDATE() THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of last transaction must be the current date';
+    END IF;
+END;
 
+-- Procedure f
+DELIMITER //
 
+CREATE PROCEDURE FindCustomerInfo()
+BEGIN
+    -- Customer with highest number of accounts
+    SELECT c.name AS customer_name, COUNT(ca.account_number) AS num_accounts
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    GROUP BY c.customer_id
+    ORDER BY num_accounts DESC
+    LIMIT 1;
 
+    -- Customer with lowest balance
+    SELECT c.name AS customer_name, MIN(a.balance) AS lowest_balance
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    JOIN Account a ON ca.account_number = a.account_number
+    GROUP BY c.customer_id
+    ORDER BY lowest_balance
+    LIMIT 1;
 
+    -- Customer involved in most joint accounts
+    SELECT c.name AS customer_name, COUNT(ca.account_number) AS num_joint_accounts
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    GROUP BY c.customer_id
+    ORDER BY num_joint_accounts DESC
+    LIMIT 1;
+END//
 
-
-
-
-
-
-
-
-
+DELIMITER ;
 
 
 
@@ -628,40 +702,84 @@ f. Write a procedure to retrieve all the loans of a specific customer.
 
 
 
+-- Create tables
+CREATE TABLE Loan (
+    loan_number INT PRIMARY KEY,
+    type VARCHAR(255),
+    amount DECIMAL(10,2),
+    last_transaction_date DATE
+);
 
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    annual_income DECIMAL(10,2),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255)
+);
 
+CREATE TABLE CustomerLoan (
+    customer_id INT,
+    loan_number INT,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (loan_number) REFERENCES Loan(loan_number),
+    PRIMARY KEY (customer_id, loan_number)
+);
 
+-- Insert tuples
+INSERT INTO Loan (loan_number, type, amount, last_transaction_date) VALUES
+(1, 'Personal', 45000.00, '2024-05-01'),
+(2, 'Mortgage', 70000.00, '2024-05-03');
 
+INSERT INTO Customer (customer_id, name, annual_income, street, city, state) VALUES
+(1, 'John Doe', 60000.00, '123 Main St', 'Anytown', 'Anystate'),
+(2, 'Jane Smith', 45000.00, '456 Elm St', 'Othertown', 'Otherstate');
 
+INSERT INTO CustomerLoan (customer_id, loan_number) VALUES
+(1, 1),
+(2, 2);
 
+-- Query c
+UPDATE Loan
+SET amount = amount * 1.12
+WHERE amount < 50000;
 
+UPDATE Loan
+SET amount = amount * 1.14
+WHERE amount >= 50000;
 
+-- Query d
+SELECT c.name AS customer_name
+FROM Customer c
+JOIN CustomerLoan cl ON c.customer_id = cl.customer_id
+GROUP BY c.customer_id
+HAVING COUNT(cl.loan_number) = 1;
 
+-- Trigger e
+CREATE TRIGGER CheckLoanAmount
+BEFORE INSERT ON Loan
+FOR EACH ROW
+BEGIN
+    DECLARE cust_income DECIMAL(10,2);
+    SELECT annual_income INTO cust_income FROM Customer WHERE customer_id = NEW.customer_id;
+    IF NEW.amount > (cust_income * 2) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Loan amount cannot be more than two times of customer\'s annual income';
+    END IF;
+END;
 
+-- Procedure f
+DELIMITER //
 
+CREATE PROCEDURE RetrieveCustomerLoans(customer_id_param INT)
+BEGIN
+    SELECT l.*
+    FROM Loan l
+    JOIN CustomerLoan cl ON l.loan_number = cl.loan_number
+    WHERE cl.customer_id = customer_id_param;
+END//
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+DELIMITER ;
 
 
 
