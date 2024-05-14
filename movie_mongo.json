@@ -1,14 +1,15 @@
-Query 1 : Restaurant
+// Query 1 : Restaurant
 
-Consider the following restaurant database with the following attributes - Name, 
-address – (building, street, area, pincode), id, cuisine, nearby landmarks, online 
-delivery- yes/no, famous for (name of the dish). Create 10 collections with data relevant 
-to the following questions. Write and execute MongoDB queries: 
+// Consider the following restaurant database with the following attributes - Name, 
+// address – (building, street, area, pincode), id, cuisine, nearby landmarks, online 
+// delivery- yes/no, famous for (name of the dish). Create 10 collections with data relevant 
+// to the following questions. Write and execute MongoDB queries: 
 
 db.createCollection("restaurants")
 
 db.restaurants.insertMany([
     {
+        "_id": "101",
         "name": "Bella Italia",
         "address": {
             "building": "20",
@@ -16,13 +17,13 @@ db.restaurants.insertMany([
             "area": "Central Bangalore",
             "pincode": "560001"
         },
-        "id": "101",
         "cuisine": "Italian",
         "nearby_landmarks": ["MG Road Metro", "St. Mark's Cathedral"],
-        "online_delivery": "yes",
+        "online_delivery": true,
         "famous_for": "Spaghetti Carbonara"
     },
     {
+        "_id": "102",
         "name": "North Spices",
         "address": {
             "building": "50",
@@ -30,13 +31,13 @@ db.restaurants.insertMany([
             "area": "Indiranagar",
             "pincode": "560038"
         },
-        "id": "102",
         "cuisine": "North Indian",
         "nearby_landmarks": ["Indiranagar Metro", "KFC Indiranagar"],
-        "online_delivery": "no",
+        "online_delivery": false,
         "famous_for": "North Indian Thali"
     },
     {
+        "_id": "103",
         "name": "The Royal Punjab",
         "address": {
             "building": "78",
@@ -44,13 +45,13 @@ db.restaurants.insertMany([
             "area": "MG Road",
             "pincode": "560001"
         },
-        "id": "103",
         "cuisine": "North Indian",
         "nearby_landmarks": ["MG Road Metro", "Commercial Street"],
-        "online_delivery": "yes",
-        "famous_for": "North Indian Thali"
+        "online_delivery": true,
+        "famous_for": "Butter Chicken"
     },
     {
+        "_id": "104",
         "name": "Pasta Street",
         "address": {
             "building": "32",
@@ -58,14 +59,13 @@ db.restaurants.insertMany([
             "area": "Koramangala",
             "pincode": "560034"
         },
-        "id": "104",
         "cuisine": "Italian",
         "nearby_landmarks": ["Forum Mall", "Jyoti Nivas College"],
-        "online_delivery": "yes",
+        "online_delivery": true,
         "famous_for": "Penne Arrabbiata"
     }
-    // Additional entries can be added here
-])
+]);
+
 
 
 
@@ -99,21 +99,7 @@ db.restaurants.find(
     }
 )
 
-//  List the name, address and nearby landmarks of all restaurants in Bangalore 
-// where north Indian thali is available 
 
-db.restaurants.find(
-    {
-        "address.area": "Bangalore",
-        "famous_for": "North Indian Thali"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "nearby_landmarks": 1,
-        "_id": 0
-    }
-)
 
 //  List the name and address of restaurants and also the dish the restaurant is 
 // famous for, in Bangalore. 
@@ -165,13 +151,13 @@ db.restaurants.find(
 
 
 
-Query 2 Restaurant
+// Query 2 Tourust Palce
 
-Consider the following Tourist places table with the following attributes - Place, 
-address – (state), id, tourist attractions, best time of the year to visit, modes of 
-transport(include nearest airport, railway station etc), accommodation, food - what not 
-to miss for sure Create 10 collections with data relevant to the following questions. 
-Write and execute MongoDB queries: 
+// Consider the following Tourist places table with the following attributes - Place, 
+// address – (state), id, tourist attractions, best time of the year to visit, modes of 
+// transport(include nearest airport, railway station etc), accommodation, food - what not 
+// to miss for sure Create 10 collections with data relevant to the following questions. 
+// Write and execute MongoDB queries: 
 
 
 db.tourist_places.insertMany([
@@ -325,7 +311,7 @@ db.tourist_places.insertMany([
         "accommodation": ["The Serai", "Dhole's Den"],
         "food": "Traditional Karnataka Cuisine"
     }
-])
+]);
 
 //  List all the tourist places of Karnataka 
 
@@ -337,7 +323,10 @@ db.tourist_places.find(
         "place": 1,
         "_id": 0
     }
-)
+);
+
+
+
 
 //  List the tourist attractions of Kerala. Exclude accommodation and food 
 
@@ -350,7 +339,7 @@ db.tourist_places.find(
         "tourist_attractions": 1,
         "_id": 0
     }
-)
+);
 
 
 //  List the places sorted state wise 
@@ -369,81 +358,99 @@ db.tourist_places.aggregate([
             "_id": 0
         }
     }
-])
+]);
  
 
+// 3. Movie Database
 
-
-
-3. Movie Database
-
-Consider the following Movie table with the following attributes Actor_name, 
-Actor_id, Actor_birthdate, Dirctor_name,Director_id, Director_birthdate, film_title, 
-year of production ,type (thriller, comedy, etc.)  Create 10 collections with data relevant 
-to the following questions. Write and execute MongoDB queries: 
+// Consider the following Movie table with the following attributes Actor_name, 
+// Actor_id, Actor_birthdate, Dirctor_name,Director_id, Director_birthdate, film_title, 
+// year of production ,type (thriller, comedy, etc.)  Create 10 collections with data relevant 
+// to the following questions. Write and execute MongoDB queries: 
 
 db.createCollection("movies");
 
 db.movies.insertMany([
-  {
-    "actor_name": "John",
-    "actor_id": 1,
-    "actor_birthdate": "1985-05-01",
-    "director_name": "Ram",
-    "director_id": 101,
-    "director_birthdate": "1970-03-15",
-    "film_title": "Action Movie",
-    "year_of_production": 2018,
-    "type": "Thriller"
-  },
-  {
-    "actor_name": "Elly",
-    "actor_id": 2,
-    "actor_birthdate": "1990-07-10",
-    "director_name": "Ram",
-    "director_id": 101,
-    "director_birthdate": "1970-03-15",
-    "film_title": "Romantic Comedy",
-    "year_of_production": 2012,
-    "type": "Comedy"
-  }
+    {
+        "actor_name": "John",
+        "actor_id": 1,
+        "actor_birthdate": "1985-05-01",
+        "director_name": "Ram",
+        "director_id": 101,
+        "director_birthdate": "1970-03-15",
+        "film_title": "Action Movie",
+        "year_of_production": 2018,
+        "type": "Thriller"
+    },
+    {
+        "actor_name": "Elly",
+        "actor_id": 2,
+        "actor_birthdate": "1990-07-10",
+        "director_name": "Ram",
+        "director_id": 101,
+        "director_birthdate": "1970-03-15",
+        "film_title": "Romantic Comedy",
+        "year_of_production": 2012,
+        "type": "Comedy"
+    },
+    {
+        "actor_name":"Ram",
+        "actor_id": 3,
+        "actor_birthdate": "1985-05-01",
+        "director_name": "Ram",
+        "director_id": 101,
+        "director_birthdate": "1970-03-15",
+        "film_title": "KGFFF",
+        "year_of_production": 2018,
+        "type": "Thriller"
+    },
+    {
+        "actor_name":"Yash",
+        "actor_id": 3,
+        "actor_birthdate": "1985-05-01",
+        "director_name": "Ram",
+        "director_id": 101,
+        "director_birthdate": "1970-03-15",
+        "film_title": "KGFFF",
+        "year_of_production": 2018,
+        "type": "Thriller"
+    }
 ]);
- 
 
-//  Queries: 
+
+
+//  Queries:
 
 // 1. List all the movies acted by John in the year 2018:
 
-  
 db.movies.find(
-  { actor_name: "John", year_of_production: 2018 },
-  { film_title: 1, _id: 0 }
-);
- 
+   { actor_name: "John", year_of_production: 2018 },
+   { film_title: 1, _id: 0 }
+ );
+
 
 // 2. List only the actors' names and type of the movie directed by Ram:
 
-  
 db.movies.find(
-  { director_name: "Ram" },
-  { actor_name: 1, type: 1, _id: 0 }
-);
- 
+   { director_name: "Ram" },
+   { actor_name: 1, type: 1, _id: 0 }
+ );
+
 
 // 3. List all the movies acted by John and Elly in the year 2012:
 
-  
 db.movies.find(
-  { actor_name: { $in: ["John", "Elly"] }, year_of_production: 2012 },
-  { film_title: 1, _id: 0 }
-);
- 
+   { actor_name: { $in: ["John", "Elly"] }, year_of_production: 2012 },
+   { film_title: 1, _id: 0 }
+ );
+
 
 // 4. List only the name and type of the movie where Ram has acted, sorted by movie names:
 
-  
 db.movies.find(
-  { actor_name: "Ram" },
-  { film_title: 1, type: 1, _id: 0 }
-).sort({ film_title: 1 });
- 
+   { actor_name: "Ram" },
+   { film_title: 1, type: 1, _id: 0 }
+ ).sort({ film_title: 1 });
+
+
+
