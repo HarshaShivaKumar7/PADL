@@ -1,0 +1,785 @@
+(* Suppose a movie_studio has several film crews. The crews might be designated by a
+given studio as crew1, crew2, and so on. However, other studios might use the same
+designations for crews, so the attribute crew_number is not a key for crews.
+Movie_studio holds the information like name, branch and several locations. Each crew
+holds information like sector, and strength.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. List all movies studios which are not used a single crews.
+d. Retrieve the movie_studio which uses highest strength crew.
+e. Write a before insert trigger to check maximum number of crews to any studio is
+limited to 5.
+f. Write a procedure retrieve all crews used by specific studio. *)
+
+CREATE TABLE Location (
+    location_id INT PRIMARY KEY,
+    address VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Movie_Studio (
+    studio_id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    branch VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Movie_Studio_Location (
+    studio_id INT,
+    location_id INT,
+    PRIMARY KEY (studio_id, location_id),
+    FOREIGN KEY (studio_id) REFERENCES Movie_Studio(studio_id),
+    FOREIGN KEY (location_id) REFERENCES Location(location_id)
+);
+
+CREATE TABLE Crew (
+    crew_id INT PRIMARY KEY,
+    crew_number VARCHAR(255) NOT NULL,
+    sector VARCHAR(255) NOT NULL,
+    strength INT NOT NULL,
+    studio_id INT,
+    FOREIGN KEY (studio_id) REFERENCES Movie_Studio(studio_id),
+    UNIQUE (studio_id, crew_number) -- Ensuring unique crew_number within a studio
+);
+
+
+INSERT INTO Location (location_id, address) VALUES
+(1, 'Los Angeles'),
+(2, 'Hollywood'),
+(3, 'Burbank');
+
+
+INSERT INTO Movie_Studio (studio_id, name, branch) VALUES
+(1, 'Paramount', 'Main'),
+(2, 'Universal', 'West'),
+(3, 'Warner Bros', 'East');
+
+
+INSERT INTO Movie_Studio_Location (studio_id, location_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3);
+
+
+INSERT INTO Crew (crew_id, crew_number, sector, strength, studio_id) VALUES
+(1, 'crew1', 'Lighting', 10, 1),
+(2, 'crew2', 'Sound', 15, 1),
+(3, 'crew3', 'Catering', 8, 2);
+
+
+SELECT ms.name
+FROM Movie_Studio ms
+LEFT JOIN Crew c ON ms.studio_id = c.studio_id
+WHERE c.crew_id IS NULL;
+
+
+SELECT ms.*
+FROM Movie_Studio ms
+JOIN Crew c ON ms.studio_id = c.studio_id
+ORDER BY c.strength DESC
+LIMIT 1;
+
+
+CREATE TRIGGER check_max_crews
+BEFORE INSERT ON Crew
+FOR EACH ROW
+BEGIN
+    DECLARE crew_count INT;
+    SELECT COUNT(*) INTO crew_count
+    FROM Crew
+    WHERE studio_id = NEW.studio_id;
+    
+    IF crew_count >= 5 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Maximum number of crews for this studio exceeded';
+    END IF;
+END;
+
+
+
+
+(* The production company is organised into different studios. We store each studio’s name,
+branch and location; every studio must own at least one movie. We store eachmovie’s title,
+censor_number and year of production. star may act in any number of movies and we store
+each actors name and address.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. List all the studios of the movie “xyz”.
+d. List all the actors, acted in a movie “xyz”.
+e. Write a procedure to list all movies produced during the specific year.
+f. Write a deletion trigger, does not allow to deleting the current year movies*)
+
+
+-- a. Establish the database by normalising up to 3NF and considering all schema level constraints.
+
+CREATE TABLE Studios (
+    studio_id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    branch VARCHAR(100) NOT NULL,
+    location VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE CartoonSerials (
+    serial_id INT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    censor_number VARCHAR(100) NOT NULL,
+    year_of_production INT NOT NULL,
+    studio_id INT,
+    FOREIGN KEY (studio_id) REFERENCES Studios(studio_id)
+);
+
+CREATE TABLE Actors (
+    actor_id INT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE VoiceRoles (
+    actor_id INT,
+    serial_id INT,
+    PRIMARY KEY (actor_id, serial_id),
+    FOREIGN KEY (actor_id) REFERENCES Actors(actor_id),
+    FOREIGN KEY (serial_id) REFERENCES CartoonSerials(serial_id)
+);
+
+-- b. Write SQL insertion query to insert few tuples to all the relations.
+
+INSERT INTO Studios (studio_id, name, branch, location) VALUES
+(1, 'Studio One', 'Branch A', 'Location A'),
+(2, 'Studio Two', 'Branch B', 'Location B');
+
+INSERT INTO CartoonSerials (serial_id, title, censor_number, year_of_production, studio_id) VALUES
+(1, 'Cartoon X', 'CN123', 2022, 1),
+(2, 'Cartoon Y', 'CN124', 2023, 1),
+(3, 'Cartoon Z', 'CN125', 2022, 2);
+
+INSERT INTO Actors (actor_id, name, address) VALUES
+(1, 'Actor A', 'Address A'),
+(2, 'Actor B', 'Address B'),
+(3, 'Actor C', 'Address C');
+
+INSERT INTO VoiceRoles (actor_id, serial_id) VALUES
+(1, 1),
+(2, 1),
+(3, 2),
+(1, 3);
+
+-- c. Find total number of actors who did voices in a cartoon-serial "xyz".
+
+SELECT COUNT(DISTINCT actor_id) AS total_actors
+FROM VoiceRoles VR
+JOIN CartoonSerials CS ON VR.serial_id = CS.serial_id
+WHERE CS.title = 'xyz';
+
+-- d. Retrieve name of studio, location and cartoon-serials title in which star "abc" is voiced.
+
+SELECT S.name AS studio_name, S.location, CS.title
+FROM Studios S
+JOIN CartoonSerials CS ON S.studio_id = CS.studio_id
+JOIN VoiceRoles VR ON CS.serial_id = VR.serial_id
+JOIN Actors A ON VR.actor_id = A.actor_id
+WHERE A.name = 'abc';
+
+-- e. Write a procedure to list all cartoon-serials produced during a specific year.
+
+DELIMITER $$
+
+CREATE PROCEDURE ListCartoonSerialsByYear(IN production_year INT)
+BEGIN
+    SELECT title
+    FROM CartoonSerials
+    WHERE year_of_production = production_year;
+END $$
+
+DELIMITER ;
+
+-- f. Write a deletion trigger, does not allow to delete the current year cartoon-serials.
+
+CREATE TRIGGER PreventCurrentYearCartoonDeletion
+BEFORE DELETE ON CartoonSerials
+FOR EACH ROW
+BEGIN
+    IF OLD.year_of_production = YEAR(CURDATE()) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete cartoon serials from the current year';
+    END IF;
+END;
+
+
+
+
+
+(* The production company is organised into different studios. We store each studio’s name,
+branch and location; a studio own any number of cartoon-serials. We store eachcartoonserials’s title, censor_number and year of production. star may do voices in any number of
+cartoon-serials and we store each actors name and address.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. Find total no. of actors, do voiced in a cartoon-serials “xyz”.
+d. Retrieve name of studio, location and cartoon-serials title in which star “abc’ is
+voiced.
+e. Write a procedure to list all cartoon-serials produced during the specific year.
+f. Write a deletion trigger, does not allow to deleting the current year cartoon-serials *)
+
+
+
+CREATE TABLE Studio (
+    studio_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    branch VARCHAR(255),
+    location VARCHAR(255)
+);
+
+CREATE TABLE CartoonSerial (
+    serial_id INT PRIMARY KEY,
+    title VARCHAR(255),
+    censor_number INT,
+    year_of_production INT,
+    studio_id INT,
+    FOREIGN KEY (studio_id) REFERENCES Studio(studio_id)
+);
+
+CREATE TABLE Actor (
+    actor_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    address VARCHAR(255)
+);
+
+CREATE TABLE VoicedIn (
+    actor_id INT,
+    serial_id INT,
+    FOREIGN KEY (actor_id) REFERENCES Actor(actor_id),
+    FOREIGN KEY (serial_id) REFERENCES CartoonSerial(serial_id),
+    PRIMARY KEY (actor_id, serial_id)
+);
+
+
+INSERT INTO Studio (studio_id, name, branch, location) VALUES
+(1, 'Studio A', 'Main Branch', 'Los Angeles'),
+(2, 'Studio B', 'Branch 1', 'New York'),
+(3, 'Studio C', 'Branch 2', 'Chicago');
+
+INSERT INTO CartoonSerial (serial_id, title, censor_number, year_of_production, studio_id) VALUES
+(1, 'Cartoon 1', 1234, 2022, 1),
+(2, 'Cartoon 2', 5678, 2023, 2),
+(3, 'Cartoon 3', 91011, 2024, 3);
+
+INSERT INTO Actor (actor_id, name, address) VALUES
+(1, 'Actor 1', '123 Main St'),
+(2, 'Actor 2', '456 Elm St'),
+(3, 'Actor 3', '789 Oak St');
+
+INSERT INTO VoicedIn (actor_id, serial_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3);
+
+
+SELECT COUNT(actor_id) AS total_actors_voiced_in_xyz 
+FROM VoicedIn 
+WHERE serial_id = (SELECT serial_id FROM CartoonSerial WHERE title = 'xyz');
+
+
+SELECT s.name AS studio_name, s.location, cs.title AS cartoon_title
+FROM Studio s
+JOIN CartoonSerial cs ON s.studio_id = cs.studio_id
+JOIN VoicedIn vi ON cs.serial_id = vi.serial_id
+JOIN Actor a ON vi.actor_id = a.actor_id
+WHERE a.name = 'abc';
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE ListCartoonSerialsByYear(year_param INT)
+BEGIN
+    SELECT title
+    FROM CartoonSerial
+    WHERE year_of_production = year_param;
+END//
+
+DELIMITER ;
+
+
+
+CREATE TRIGGER PreventDeleteCurrentYear
+BEFORE DELETE ON CartoonSerial
+FOR EACH ROW
+BEGIN
+    IF OLD.year_of_production = YEAR(NOW()) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete cartoon serials of current year';
+    END IF;
+END;
+
+
+
+
+Puppy pet shop wants to keep track of dogs and their owners. The person can buy
+maximum three pet dogs. we store person’s name, SSN and address and dog’s name,
+date of purchase and sex. The owner of the pet dogs will be identified by SSN since the
+dog’s names are not distinct.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. List all pets owned by a person “abhiman”.
+d. List all persons who are not owned a single pet.
+e. Write a trigger to check the constraints that person can buy maximum three pet
+dogs.
+f. Write a procedure to list all dogs and owner details purchased on the specific date.
+
+
+CREATE TABLE Person (
+    ssn INT PRIMARY KEY,
+    name VARCHAR(255),
+    address VARCHAR(255)
+);
+
+CREATE TABLE Dog (
+    dog_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    date_of_purchase DATE,
+    sex VARCHAR(1),
+    owner_ssn INT,
+    FOREIGN KEY (owner_ssn) REFERENCES Person(ssn)
+);
+
+
+
+
+INSERT INTO Person (ssn, name, address) VALUES
+(123456789, 'Abhiman', '123 Main St'),
+(987654321, 'John Doe', '456 Elm St');
+
+INSERT INTO Dog (dog_id, name, date_of_purchase, sex, owner_ssn) VALUES
+(1, 'Buddy', '2024-05-01', 'M', 123456789),
+(2, 'Max', '2024-05-03', 'M', 123456789),
+(3, 'Lucy', '2024-05-05', 'F', 123456789),
+(4, 'Bailey', '2024-05-02', 'F', 987654321);
+
+
+
+
+SELECT d.name AS dog_name, p.name AS owner_name
+FROM Dog d
+JOIN Person p ON d.owner_ssn = p.ssn
+WHERE p.name = 'Abhiman';
+
+
+
+SELECT name
+FROM Person
+WHERE ssn NOT IN (SELECT owner_ssn FROM Dog);
+
+
+CREATE TRIGGER MaxThreeDogsPerPerson
+BEFORE INSERT ON Dog
+FOR EACH ROW
+BEGIN
+    DECLARE dog_count INT;
+    SELECT COUNT(*) INTO dog_count FROM Dog WHERE owner_ssn = NEW.owner_ssn;
+    IF dog_count >= 3 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Maximum of three dogs per person allowed';
+    END IF;
+END;
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE ListDogsAndOwnersByDate(date_param DATE)
+BEGIN
+    SELECT d.name AS dog_name, p.name AS owner_name, p.address
+    FROM Dog d
+    JOIN Person p ON d.owner_ssn = p.ssn
+    WHERE d.date_of_purchase = date_param;
+END//
+
+DELIMITER ;
+
+
+
+
+Car marketing company wants keep track of marketed cars and their owner. Each carmust
+be associated with a single owner and owner may have any number of cars. Westore car’s
+registration number, model & color and owner’s name, address & SSN. We also store date
+of purchase of each car.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+
+CREATE TABLE Owner (
+    ssn INT PRIMARY KEY,
+    name VARCHAR(255),
+    address VARCHAR(255)
+);
+
+CREATE TABLE Car (
+    registration_number VARCHAR(20) PRIMARY KEY,
+    model VARCHAR(255),
+    color VARCHAR(50),
+    owner_ssn INT,
+    date_of_purchase DATE,
+    FOREIGN KEY (owner_ssn) REFERENCES Owner(ssn)
+);
+
+INSERT INTO Owner (ssn, name, address) VALUES
+(123456789, 'John Doe', '123 Main St'),
+(987654321, 'Jane Smith', '456 Elm St');
+
+INSERT INTO Car (registration_number, model, color, owner_ssn, date_of_purchase) VALUES
+('ABC123', 'Toyota Camry', 'Blue', 123456789, '2024-05-01'),
+('XYZ789', 'Honda Civic', 'Red', 123456789, '2024-05-03'),
+('DEF456', 'Ford Mustang', 'Black', 987654321, '2024-05-05');
+
+SELECT o.name AS owner_name, COUNT(c.registration_number) AS num_cars_owned
+FROM Owner o
+JOIN Car c ON o.ssn = c.owner_ssn
+GROUP BY o.name
+ORDER BY num_cars_owned DESC
+LIMIT 1;
+
+
+SELECT o.name AS owner_name, o.address, c.registration_number, c.model, c.color, c.date_of_purchase
+FROM Owner o
+JOIN Car c ON o.ssn = c.owner_ssn
+WHERE c.date_of_purchase = 'yyyy-mm-dd';
+
+
+DELIMITER //
+
+CREATE PROCEDURE ListCarsAndOwnersByYear(year_param INT)
+BEGIN
+    SELECT c.registration_number, c.model, c.color, o.name AS owner_name, o.address
+    FROM Car c
+    JOIN Owner o ON c.owner_ssn = o.ssn
+    WHERE YEAR(c.date_of_purchase) = year_param;
+END//
+
+DELIMITER ;
+
+
+CREATE TRIGGER CheckDateOfPurchase
+BEFORE INSERT ON Car
+FOR EACH ROW
+BEGIN
+    IF NEW.date_of_purchase > CURDATE() THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of purchase must be less than or equal to current date';
+    END IF;
+END;
+
+
+
+6.Education institute is managing the online course enrolment system. Students can enrol
+maximum of six courses of their choice and a maximum student to be enrolledto any
+course is 60. We store student details like name, USN, semester and several addresses,
+course details like unique title, unique id and credits.
+a. Establish the database by normalizing up to 3NF and considering all schema
+levelconstraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. Find number of students enrolled for the course ‘DBMS’.
+d. Retrieve student names that are enrolled for data structure course but not enrolled
+for logic design.
+e. Write a trigger to establish the constraint that the students can enrol maximum of
+six course of their choice.
+f. Write a procedure to list all the courses enrolled by the seventh semester students.
+
+
+
+CREATE TABLE Student (
+    usn VARCHAR(10) PRIMARY KEY,
+    name VARCHAR(255),
+    semester INT,
+    address VARCHAR(255)
+);
+
+CREATE TABLE Course (
+    course_id INT PRIMARY KEY,
+    title VARCHAR(255) UNIQUE,
+    credits INT
+);
+
+CREATE TABLE Enrollment (
+    enrollment_id INT PRIMARY KEY,
+    usn VARCHAR(10),
+    course_id INT,
+    FOREIGN KEY (usn) REFERENCES Student(usn),
+    FOREIGN KEY (course_id) REFERENCES Course(course_id)
+);
+
+INSERT INTO Student (usn, name, semester, address) VALUES
+('1ABCD', 'John Doe', 7, '123 Main St'),
+('2EFGH', 'Jane Smith', 6, '456 Elm St');
+
+INSERT INTO Course (course_id, title, credits) VALUES
+(1, 'DBMS', 3),
+(2, 'Data Structures', 4),
+(3, 'Logic Design', 3);
+
+INSERT INTO Enrollment (enrollment_id, usn, course_id) VALUES
+(1, '1ABCD', 1),
+(2, '1ABCD', 2),
+(3, '2EFGH', 2),
+(4, '2EFGH', 3);
+
+
+SELECT COUNT(usn) AS num_students_enrolled
+FROM Enrollment
+WHERE course_id = (SELECT course_id FROM Course WHERE title = 'DBMS');
+
+
+SELECT s.name AS student_name
+FROM Student s
+WHERE s.usn IN (SELECT e.usn FROM Enrollment e JOIN Course c ON e.course_id = c.course_id WHERE c.title = 'Data Structures')
+AND s.usn NOT IN (SELECT e.usn FROM Enrollment e JOIN Course c ON e.course_id = c.course_id WHERE c.title = 'Logic Design');
+
+
+CREATE TRIGGER MaxSixCoursesPerStudent
+BEFORE INSERT ON Enrollment
+FOR EACH ROW
+BEGIN
+    DECLARE num_courses INT;
+    SELECT COUNT(*) INTO num_courses FROM Enrollment WHERE usn = NEW.usn;
+    IF num_courses >= 6 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Maximum of six courses per student allowed';
+    END IF;
+END;
+
+
+DELIMITER //
+
+CREATE PROCEDURE ListCoursesForSeventhSemesterStudents()
+BEGIN
+    SELECT s.name AS student_name, c.title AS course_title
+    FROM Student s
+    JOIN Enrollment e ON s.usn = e.usn
+    JOIN Course c ON e.course_id = c.course_id
+    WHERE s.semester = 7;
+END//
+
+DELIMITER ;
+
+
+
+
+
+
+7. The commercial bank wants to keep track of the customer’s account information. Each
+customer may have any number of accounts and account can be shared by anynumber
+of customers. The system will keep track of the date of last transaction. Westore the
+following details:
+i. account: unique account number, type and balance.
+ii. customer: unique customer id, name and several addressescomposed of street, city and
+ state.
+a. Establish the database by normalising up to 3NF and considering all schema level
+constraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. Add 3% interest to the customer who have less than 10000 balances and 6%
+interest to remaining customers.
+d. List joint accounts involving more than three customers.
+e. Write a insertion trigger to allow only current date for date of last transaction
+field.
+f. Write a procedure to find the customer who has highest number of accounts, the
+customer who has lowest balance, the customer who involved in most of joint
+accounts.
+
+
+
+
+
+-- Create tables
+CREATE TABLE Account (
+    account_number INT PRIMARY KEY,
+    type VARCHAR(255),
+    balance DECIMAL(10,2),
+    last_transaction_date DATE
+);
+
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255)
+);
+
+CREATE TABLE CustomerAccount (
+    customer_id INT,
+    account_number INT,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (account_number) REFERENCES Account(account_number),
+    PRIMARY KEY (customer_id, account_number)
+);
+
+-- Insert tuples
+INSERT INTO Account (account_number, type, balance, last_transaction_date) VALUES
+(1, 'Savings', 15000.00, '2024-05-01'),
+(2, 'Checking', 8000.00, '2024-05-03');
+
+INSERT INTO Customer (customer_id, name, street, city, state) VALUES
+(1, 'John Doe', '123 Main St', 'Anytown', 'Anystate'),
+(2, 'Jane Smith', '456 Elm St', 'Othertown', 'Otherstate');
+
+INSERT INTO CustomerAccount (customer_id, account_number) VALUES
+(1, 1),
+(2, 1),
+(1, 2),
+(2, 2);
+
+-- Query c
+UPDATE Account
+SET balance = balance * 1.03
+WHERE balance < 10000;
+
+UPDATE Account
+SET balance = balance * 1.06
+WHERE balance >= 10000;
+
+-- Query d
+SELECT ca.account_number, COUNT(ca.customer_id) AS num_customers
+FROM CustomerAccount ca
+GROUP BY ca.account_number
+HAVING COUNT(ca.customer_id) > 3;
+
+-- Trigger e
+CREATE TRIGGER CheckLastTransactionDate
+BEFORE INSERT ON Account
+FOR EACH ROW
+BEGIN
+    IF NEW.last_transaction_date != CURDATE() THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Date of last transaction must be the current date';
+    END IF;
+END;
+
+-- Procedure f
+DELIMITER //
+
+CREATE PROCEDURE FindCustomerInfo()
+BEGIN
+    -- Customer with highest number of accounts
+    SELECT c.name AS customer_name, COUNT(ca.account_number) AS num_accounts
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    GROUP BY c.customer_id
+    ORDER BY num_accounts DESC
+    LIMIT 1;
+
+    -- Customer with lowest balance
+    SELECT c.name AS customer_name, MIN(a.balance) AS lowest_balance
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    JOIN Account a ON ca.account_number = a.account_number
+    GROUP BY c.customer_id
+    ORDER BY lowest_balance
+    LIMIT 1;
+
+    -- Customer involved in most joint accounts
+    SELECT c.name AS customer_name, COUNT(ca.account_number) AS num_joint_accounts
+    FROM Customer c
+    JOIN CustomerAccount ca ON c.customer_id = ca.customer_id
+    GROUP BY c.customer_id
+    ORDER BY num_joint_accounts DESC
+    LIMIT 1;
+END//
+
+DELIMITER ;
+
+
+
+8. The commercial bank wants to keep track of the customer’s loan information. Each
+customer can take any number of loans from the bank and loan will not be shared. The
+system will keep track of the date of last transaction. We store the following details:
+i. loan: unique loan number, type and amount.
+ii. customer: unique customer id, name, annual income and several addresses
+composed of street, city and state.
+a. Establish the database by normalizing up to 3NF and considering all schema
+levelconstraints.
+b. Write SQL insertion query to insert few tuples to all the relations.
+c. Add 12% interest to the customer who have less than 50000 amount and 14%
+interest to remaining customers.
+d. Retrieve the customers who have single loan in a bank.
+e. Write a insertion trigger to loan, that does not allow if the loan amount is more
+than two times of customers annual income.
+f. Write a procedure to retrieve all the loans of a specific customer.
+
+
+
+-- Create tables
+CREATE TABLE Loan (
+    loan_number INT PRIMARY KEY,
+    type VARCHAR(255),
+    amount DECIMAL(10,2),
+    last_transaction_date DATE
+);
+
+CREATE TABLE Customer (
+    customer_id INT PRIMARY KEY,
+    name VARCHAR(255),
+    annual_income DECIMAL(10,2),
+    street VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255)
+);
+
+CREATE TABLE CustomerLoan (
+    customer_id INT,
+    loan_number INT,
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
+    FOREIGN KEY (loan_number) REFERENCES Loan(loan_number),
+    PRIMARY KEY (customer_id, loan_number)
+);
+
+-- Insert tuples
+INSERT INTO Loan (loan_number, type, amount, last_transaction_date) VALUES
+(1, 'Personal', 45000.00, '2024-05-01'),
+(2, 'Mortgage', 70000.00, '2024-05-03');
+
+INSERT INTO Customer (customer_id, name, annual_income, street, city, state) VALUES
+(1, 'John Doe', 60000.00, '123 Main St', 'Anytown', 'Anystate'),
+(2, 'Jane Smith', 45000.00, '456 Elm St', 'Othertown', 'Otherstate');
+
+INSERT INTO CustomerLoan (customer_id, loan_number) VALUES
+(1, 1),
+(2, 2);
+
+-- Query c
+UPDATE Loan
+SET amount = amount * 1.12
+WHERE amount < 50000;
+
+UPDATE Loan
+SET amount = amount * 1.14
+WHERE amount >= 50000;
+
+-- Query d
+SELECT c.name AS customer_name
+FROM Customer c
+JOIN CustomerLoan cl ON c.customer_id = cl.customer_id
+GROUP BY c.customer_id
+HAVING COUNT(cl.loan_number) = 1;
+
+-- Trigger e
+CREATE TRIGGER CheckLoanAmount
+BEFORE INSERT ON Loan
+FOR EACH ROW
+BEGIN
+    DECLARE cust_income DECIMAL(10,2);
+    SELECT annual_income INTO cust_income FROM Customer WHERE customer_id = NEW.customer_id;
+    IF NEW.amount > (cust_income * 2) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Loan amount cannot be more than two times of customer\'s annual income';
+    END IF;
+END;
+
+-- Procedure f
+DELIMITER //
+
+CREATE PROCEDURE RetrieveCustomerLoans(customer_id_param INT)
+BEGIN
+    SELECT l.*
+    FROM Loan l
+    JOIN CustomerLoan cl ON l.loan_number = cl.loan_number
+    WHERE cl.customer_id = customer_id_param;
+END//
+
+DELIMITER ;
+
+
+
