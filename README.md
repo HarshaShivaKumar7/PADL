@@ -79,7 +79,7 @@ Create the above tables in SQL. Specify primary and foreign keys properly. Enter
 - Write a deletion trigger, set NULL on deletion of an ITEM.
 
 
-** MongoDB Questions:
+### MongoDB Questions:
 
 ### Restaurant Database
 Consider the following restaurant database with the following attributes - Name, address – (building, street, area, pincode), id, cuisine, nearby landmarks, online delivery- yes/no, famous for (name of the dish). Create 10 collections with data relevant to the following questions. Write and execute MongoDB queries:
