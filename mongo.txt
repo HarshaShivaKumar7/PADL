@@ -1,456 +1,196 @@
-// Query 1 : Restaurant
+// MongoDB
 
-// Consider the following restaurant database with the following attributes - Name, 
-// address – (building, street, area, pincode), id, cuisine, nearby landmarks, online 
-// delivery- yes/no, famous for (name of the dish). Create 10 collections with data relevant 
-// to the following questions. Write and execute MongoDB queries: 
+// Restaurant Database
+// Consider the following restaurant database with the following attributes - Name, address – (building, street, area, pincode), id, cuisine, nearby landmarks, online delivery- yes/no, famous for (name of the dish). Create 10 collections with data relevant to the following questions. Write and execute MongoDB queries:
 
-db.createCollection("restaurants")
-
+db.crateCollections("restaurants");
 db.restaurants.insertMany([
-    {
-        "_id": "101",
-        "name": "Bella Italia",
-        "address": {
-            "building": "20",
-            "street": "Church Street",
-            "area": "Central Bangalore",
-            "pincode": "560001"
-        },
-        "cuisine": "Italian",
-        "nearby_landmarks": ["MG Road Metro", "St. Mark's Cathedral"],
-        "online_delivery": true,
-        "famous_for": "Spaghetti Carbonara"
+  {
+    name: "Italian Delight",
+    address: {
+      building: "10",
+      street: "MG Road",
+      area: "Central Bangalore",
+      pincode: 560001,
     },
-    {
-        "_id": "102",
-        "name": "North Spices",
-        "address": {
-            "building": "50",
-            "street": "80 Feet Road",
-            "area": "Indiranagar",
-            "pincode": "560038"
-        },
-        "cuisine": "North Indian",
-        "nearby_landmarks": ["Indiranagar Metro", "KFC Indiranagar"],
-        "online_delivery": false,
-        "famous_for": "North Indian Thali"
+    id: 1,
+    cuisine: "Italian",
+    nearby_landmarks: "MG Mall",
+    online_delivery: "yes",
+    famous_for: "Pasta",
+  },
+  {
+    name: "Thali House",
+    address: {
+      building: "12",
+      street: "Brigade Road",
+      area: "Central Bangalore",
+      pincode: 560002,
     },
-    {
-        "_id": "103",
-        "name": "The Royal Punjab",
-        "address": {
-            "building": "78",
-            "street": "MG Road",
-            "area": "MG Road",
-            "pincode": "560001"
-        },
-        "cuisine": "North Indian",
-        "nearby_landmarks": ["MG Road Metro", "Commercial Street"],
-        "online_delivery": true,
-        "famous_for": "Butter Chicken"
+    id: 2,
+    cuisine: "North Indian",
+    nearby_landmarks: "Brigade Tower",
+    online_delivery: "no",
+    famous_for: "North Indian Thali",
+  },
+  {
+    name: "Spice Junction",
+    address: {
+      building: "15",
+      street: "Church Street",
+      area: "Central Bangalore",
+      pincode: 560003,
     },
-    {
-        "_id": "104",
-        "name": "Pasta Street",
-        "address": {
-            "building": "32",
-            "street": "100 Feet Road",
-            "area": "Koramangala",
-            "pincode": "560034"
-        },
-        "cuisine": "Italian",
-        "nearby_landmarks": ["Forum Mall", "Jyoti Nivas College"],
-        "online_delivery": true,
-        "famous_for": "Penne Arrabbiata"
-    }
+    id: 3,
+    cuisine: "North Indian",
+    nearby_landmarks: "Church Park",
+    online_delivery: "yes",
+    famous_for: "Butter Chicken",
+  },
 ]);
 
-
-
-
-//  List the name and address of all restaurants in Bangalore with Italian cuisine 
+// 1. List the name and address of all restaurants in Bangalore with Italian cuisine.
 
 db.restaurants.find(
-    {
-        "address.area": "Bangalore",
-        "cuisine": "Italian"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "_id": 0
-    }
-)
+  { cuisine: "Italian", "address.area": "Central Bangalore" },
+  { name: 1, address: 1, _id: 0 }
+);
 
-//  List the name, address and nearby landmarks of all restaurants in Bangalore 
-// where north Indianthali is available. 
+// 2. List the name, address and nearby landmarks of all restaurants in Bangalore where North Indian thali is available.
 
 db.restaurants.find(
-    {
-        "address.area": "Bangalore",
-        "famous_for": "North Indian Thali"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "nearby_landmarks": 1,
-        "_id": 0
-    }
-)
+  {
+    cuisine: "North Indian",
+    famous_for: "North Indian Thali",
+    "address.area": "Central Bangalore",
+  },
+  { name: 1, address: 1, nearby_landmarks: 1, _id: 0 }
+);
 
-
-
-//  List the name and address of restaurants and also the dish the restaurant is 
-// famous for, in Bangalore. 
+// 3. List the name and address of restaurants and also the dish the restaurant is famous for, in Bangalore where online delivery is available.
 
 db.restaurants.find(
-    {
-        "address.area": "Bangalore"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "famous_for": 1,
-        "_id": 0
-    }
-)
+  { "address.area": "Central Bangalore", online_delivery: "yes" },
+  { name: 1, address: 1, famous_for: 1, _id: 0 }
+);
 
+// Tourist Places Database
+// Consider the following Tourist places table with the following attributes - Place, address – (state), id, tourist attractions, best time of the year to visit, modes of transport (include nearest airport, railway station etc), accommodation, food - what not to miss for sure. Create 10 collections with data relevant to the following questions. Write and execute MongoDB queries:
 
-//  List the name, address and nearby landmarks of all restaurants in Bangalore 
-// where north Indian thali is available. 
-
-db.restaurants.find(
-    {
-        "address.area": "Bangalore",
-        "famous_for": "North Indian Thali"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "nearby_landmarks": 1,
-        "_id": 0
-    }
-)
-
-//  List the name and address of restaurants and also the dish the restaurant is 
-// famous for, in Bangalore where online delivery is available
-
-db.restaurants.find(
-    {
-        "address.area": "Bangalore",
-        "online_delivery": "yes"
-    },
-    {
-        "name": 1,
-        "address": 1,
-        "famous_for": 1,
-        "_id": 0
-    }
-)
-
-
-
-// Query 2 Tourust Palce
-
-// Consider the following Tourist places table with the following attributes - Place, 
-// address – (state), id, tourist attractions, best time of the year to visit, modes of 
-// transport(include nearest airport, railway station etc), accommodation, food - what not 
-// to miss for sure Create 10 collections with data relevant to the following questions. 
-// Write and execute MongoDB queries: 
-
-
+db.createCollections("tourist_places");
 db.tourist_places.insertMany([
-    {
-        "place": "Mysore Palace",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "1",
-        "tourist_attractions": ["Palace", "Museum"],
-        "best_time_to_visit": "October to March",
-        "modes_of_transport": {
-            "nearest_airport": "Mysore Airport",
-            "nearest_railway_station": "Mysore Junction"
-        },
-        "accommodation": ["Royal Orchid", "Radisson Blu"],
-        "food": "Mysore Pak"
+  {
+    id: 1,
+    place: "Mysore Palace",
+    address: { state: "Karnataka" },
+    tourist_attractions: "Historical Monument",
+    best_time_of_year: "October to March",
+    modes_of_transport: {
+      nearest_airport: "Mysore Airport",
+      nearest_railway_station: "Mysore Junction",
     },
-    {
-        "place": "Coorg",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "2",
-        "tourist_attractions": ["Coffee Plantations", "Abbey Falls"],
-        "best_time_to_visit": "October to March",
-        "modes_of_transport": {
-            "nearest_airport": "Mangalore Airport",
-            "nearest_railway_station": "Mysore Junction"
-        },
-        "accommodation": ["Coorg Wilderness Resort", "The Tamara Coorg"],
-        "food": "Pandi Curry"
+    accommodation: "Numerous Hotels",
+    food: "South Indian Cuisine",
+  },
+  {
+    id: 2,
+    place: "Coorg",
+    address: { state: "Karnataka" },
+    tourist_attractions: "Coffee Plantations, Abbey Falls",
+    best_time_of_year: "October to March",
+    modes_of_transport: {
+      nearest_airport: "Mangalore Airport",
+      nearest_railway_station: "Mysore Junction",
     },
-    {
-        "place": "Lalbagh Botanical Garden",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "3",
-        "tourist_attractions": ["Floral Clock", "Glass House"],
-        "best_time_to_visit": "All year round",
-        "modes_of_transport": {
-            "nearest_airport": "Kempegowda International Airport",
-            "nearest_railway_station": "Bangalore City Railway Station"
-        },
-        "accommodation": ["Taj West End", "The Leela Palace"],
-        "food": "Bisi Bele Bath"
+    accommodation: "Resorts and Homestays",
+    food: "Coorgi Cuisine",
+  },
+  {
+    id: 3,
+    place: "Alleppey",
+    address: { state: "Kerala" },
+    tourist_attractions: "Backwaters, Houseboats",
+    best_time_of_year: "November to February",
+    modes_of_transport: {
+      nearest_airport: "Cochin Airport",
+      nearest_railway_station: "Alleppey Station",
     },
-    {
-        "place": "Backwaters of Alleppey",
-        "address": {
-            "state": "Kerala"
-        },
-        "id": "4",
-        "tourist_attractions": ["Houseboat Cruises", "Vembanad Lake"],
-        "best_time_to_visit": "November to February",
-        "modes_of_transport": {
-            "nearest_airport": "Cochin International Airport",
-            "nearest_railway_station": "Alleppey Railway Station"
-        },
-        "accommodation": ["Lake Palace Resort", "Punnamada Resort"],
-        "food": "Karimeen Pollichathu"
-    },
-    {
-        "place": "Munnar Tea Gardens",
-        "address": {
-            "state": "Kerala"
-        },
-        "id": "5",
-        "tourist_attractions": ["Tea Plantations", "Eravikulam National Park"],
-        "best_time_to_visit": "September to March",
-        "modes_of_transport": {
-            "nearest_airport": "Cochin International Airport",
-            "nearest_railway_station": "Aluva Railway Station"
-        },
-        "accommodation": ["Tea County", "The Fog Munnar"],
-        "food": "Appam with Stew"
-    },
-    {
-        "place": "Hampi",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "6",
-        "tourist_attractions": ["Virupaksha Temple", "Vijaya Vittala Temple"],
-        "best_time_to_visit": "October to February",
-        "modes_of_transport": {
-            "nearest_airport": "Hubli Airport",
-            "nearest_railway_station": "Hospet Junction"
-        },
-        "accommodation": ["Heritage Resort", "Evolve Back"],
-        "food": "Karnataka Meals"
-    },
-    {
-        "place": "Wayanad",
-        "address": {
-            "state": "Kerala"
-        },
-        "id": "7",
-        "tourist_attractions": ["Edakkal Caves", "Wayanad Wildlife Sanctuary"],
-        "best_time_to_visit": "October to May",
-        "modes_of_transport": {
-            "nearest_airport": "Calicut International Airport",
-            "nearest_railway_station": "Kozhikode Railway Station"
-        },
-        "accommodation": ["Wayanad Silverwoods", "Vythiri Resort"],
-        "food": "Malabar Biryani"
-    },
-    {
-        "place": "Gokarna",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "8",
-        "tourist_attractions": ["Om Beach", "Mahabaleshwar Temple"],
-        "best_time_to_visit": "October to March",
-        "modes_of_transport": {
-            "nearest_airport": "Dabolim Airport",
-            "nearest_railway_station": "Gokarna Road Railway Station"
-        },
-        "accommodation": ["Om Beach Resort", "Sanskruti Resort"],
-        "food": "Seafood"
-    },
-    {
-        "place": "Alleppey",
-        "address": {
-            "state": "Kerala"
-        },
-        "id": "9",
-        "tourist_attractions": ["Alleppey Beach", "Krishnapuram Palace"],
-        "best_time_to_visit": "November to February",
-        "modes_of_transport": {
-            "nearest_airport": "Cochin International Airport",
-            "nearest_railway_station": "Alleppey Railway Station"
-        },
-        "accommodation": ["Lake Palace Resort", "Punnamada Resort"],
-        "food": "Puttu and Kadala Curry"
-    },
-    {
-        "place": "Bandipur National Park",
-        "address": {
-            "state": "Karnataka"
-        },
-        "id": "10",
-        "tourist_attractions": ["Wildlife Safari", "Bandipur Tiger Reserve"],
-        "best_time_to_visit": "October to March",
-        "modes_of_transport": {
-            "nearest_airport": "Mysore Airport",
-            "nearest_railway_station": "Mysore Junction"
-        },
-        "accommodation": ["The Serai", "Dhole's Den"],
-        "food": "Traditional Karnataka Cuisine"
-    }
+    accommodation: "Houseboats, Hotels",
+    food: "Seafood",
+  },
 ]);
 
-//  List all the tourist places of Karnataka 
+// 1. List all the tourist places of Karnataka.
+db.tourist_places.find({ "address.state": "Karnataka" }, { place: 1, _id: 0 });
 
+// 2. List the tourist attractions of Kerala. Exclude accommodation and food.
 db.tourist_places.find(
-    {
-        "address.state": "Karnataka"
-    },
-    {
-        "place": 1,
-        "_id": 0
-    }
+  { "address.state": "Kerala" },
+  { tourist_attractions: 1, _id: 0 }
 );
 
+// 3. List the places sorted state wise.
+db.tourist_places
+  .find({}, { place: 1, "address.state": 1, _id: 0 })
+  .sort({ "address.state": 1 });
 
-
-
-//  List the tourist attractions of Kerala. Exclude accommodation and food 
-
-db.tourist_places.find(
-    {
-        "address.state": "Kerala"
-    },
-    {
-        "place": 1,
-        "tourist_attractions": 1,
-        "_id": 0
-    }
-);
-
-
-//  List the places sorted state wise 
-
-db.tourist_places.aggregate([
-    {
-        $sort: {
-            "address.state": 1,
-            "place": 1
-        }
-    },
-    {
-        $project: {
-            "place": 1,
-            "address.state": 1,
-            "_id": 0
-        }
-    }
-]);
- 
-
-// 3. Movie Database
-
-// Consider the following Movie table with the following attributes Actor_name, 
-// Actor_id, Actor_birthdate, Dirctor_name,Director_id, Director_birthdate, film_title, 
-// year of production ,type (thriller, comedy, etc.)  Create 10 collections with data relevant 
-// to the following questions. Write and execute MongoDB queries: 
-
-db.createCollection("movies");
-
+// Movie Database
+// Consider the following Movie table with the following attributes - Actor_name, Actor_id, Actor_birthdate, Director_name, Director_id, Director_birthdate, film_title, year of production, type (thriller, comedy, etc.). Create 10 collections with data relevant to the following questions. Write and execute MongoDB queries:
 db.movies.insertMany([
-    {
-        "actor_name": "John",
-        "actor_id": 1,
-        "actor_birthdate": "1985-05-01",
-        "director_name": "Ram",
-        "director_id": 101,
-        "director_birthdate": "1970-03-15",
-        "film_title": "Action Movie",
-        "year_of_production": 2018,
-        "type": "Thriller"
-    },
-    {
-        "actor_name": "Elly",
-        "actor_id": 2,
-        "actor_birthdate": "1990-07-10",
-        "director_name": "Ram",
-        "director_id": 101,
-        "director_birthdate": "1970-03-15",
-        "film_title": "Romantic Comedy",
-        "year_of_production": 2012,
-        "type": "Comedy"
-    },
-    {
-        "actor_name":"Ram",
-        "actor_id": 3,
-        "actor_birthdate": "1985-05-01",
-        "director_name": "Ram",
-        "director_id": 101,
-        "director_birthdate": "1970-03-15",
-        "film_title": "KGFFF",
-        "year_of_production": 2018,
-        "type": "Thriller"
-    },
-    {
-        "actor_name":"Yash",
-        "actor_id": 3,
-        "actor_birthdate": "1985-05-01",
-        "director_name": "Ram",
-        "director_id": 101,
-        "director_birthdate": "1970-03-15",
-        "film_title": "KGFFF",
-        "year_of_production": 2018,
-        "type": "Thriller"
-    }
+  {
+    actor_name: "John",
+    actor_id: 1,
+    actor_birthdate: "1980-01-01",
+    director_name: "Ram",
+    director_id: 1,
+    director_birthdate: "1970-01-01",
+    film_title: "Action Movie 2018",
+    year_of_production: 2018,
+    type: "Action",
+  },
+  {
+    actor_name: "Elly",
+    actor_id: 2,
+    actor_birthdate: "1985-02-02",
+    director_name: "Ram",
+    director_id: 1,
+    director_birthdate: "1970-01-01",
+    film_title: "Drama Movie 2012",
+    year_of_production: 2012,
+    type: "Drama",
+  },
+  {
+    actor_name: "John",
+    actor_id: 1,
+    actor_birthdate: "1980-01-01",
+    director_name: "Ram",
+    director_id: 1,
+    director_birthdate: "1970-01-01",
+    film_title: "Comedy Movie 2012",
+    year_of_production: 2012,
+    type: "Comedy",
+  },
 ]);
 
-
-
-//  Queries:
-
-// 1. List all the movies acted by John in the year 2018:
-
+// 1. List all the movies acted by John in the year 2018.
 db.movies.find(
-   { actor_name: "John", year_of_production: 2018 },
-   { film_title: 1, _id: 0 }
- );
+  { actor_name: "John", year_of_production: 2018 },
+  { film_title: 1, _id: 0 }
+);
 
+// 2. List only the actor names and type of the movie directed by Ram.
+db.movies.find({ director_name: "Ram" }, { actor_name: 1, type: 1, _id: 0 });
 
-// 2. List only the actors' names and type of the movie directed by Ram:
-
+// 3. List all the movies acted by John and Elly in the year 2012.
 db.movies.find(
-   { director_name: "Ram" },
-   { actor_name: 1, type: 1, _id: 0 }
- );
+  {
+    $or: [{ actor_name: "John" }, { actor_name: "Elly" }],
+    year_of_production: 2012,
+  },
+  { film_title: 1, _id: 0 }
+);
 
-
-// 3. List all the movies acted by John and Elly in the year 2012:
-
-db.movies.find(
-   { actor_name: { $in: ["John", "Elly"] }, year_of_production: 2012 },
-   { film_title: 1, _id: 0 }
- );
-
-
-// 4. List only the name and type of the movie where Ram has acted, sorted by movie names:
-
-db.movies.find(
-   { actor_name: "Ram" },
-   { film_title: 1, type: 1, _id: 0 }
- ).sort({ film_title: 1 });
-
-
-
+// 4. List only the name and type of the movie where Ram has acted, sorted by movie names.
+db.movies
+  .find({ actor_name: "Ram" }, { film_title: 1, type: 1, _id: 0 })
+  .sort({ film_title: 1 });
