@@ -103,6 +103,10 @@ Consider the following Movie table with the following attributes - Actor_name, A
 
 
 
+
+** PYTHON PROGRAMS
+
+
 1. **Write a Python program to do the following:**
    **a.** Create synthetic faculty data set with 100000 rows in a CSV file.
    **b.** Load it to list data structure in Python.
