@@ -1,4 +1,4 @@
-Sure, here is the structured form for each question with relational schemas and corresponding queries.
+mySQL
 
 Question 1
 A. Suppose a movie_studio has several film crews. The crews might be designated by a given studio as crew1, crew 2, and so on. However, other studios might use the same designations for crews, so the attribute crew_number is not a key for crews. Movie_studio holds the information like name, branch and several locations. Each crew holds information like sector and strength.
@@ -45,7 +45,6 @@ END;
 Question 2
 A. The production company is organized into different studios. We store each studio’s name branch and location; every studio must own at least one movie. We store each movie’s title, sensor_number and year of production. Star may act in any number of movies and we store each actor's name and address.
 
--- Relational Schema
 -- studio (studio_id, name, branch, location)
 -- movie (movie_id, studio_id, title, sensor_number, year_of_production)
 -- star (star_id, name, address)
@@ -163,7 +162,6 @@ END;
 Question 5
 A. Puppy pet shop wants to keep track of dogs and their owners. The person can buy a maximum of three pet dogs. We store the person’s name, SSN and address and the dog’s name, date of purchase and sex. The owner of the pet dogs will be identified by SSN since the dog’s names are not distinct.
 
--- Relational Schema
 -- person (person_id, name, SSN, address)
 -- pet_dog (dog_id, person_id, name, date_of_purchase, sex)
 
@@ -200,7 +198,6 @@ END;
 ### Question 6
 A. Education institute is managing the online course enrollment system. Students can enroll in a maximum of six courses of their choice and a maximum of 60 students can be enrolled in any course. We store student details like name, USN, semester and several addresses, and course details like unique title, unique id and credits.
 
--- Relational Schema
 -- student (student_id, name, USN, semester, address)
 -- course (course_id, title, credits)
 -- enrollment (student_id, course_id)
@@ -219,9 +216,13 @@ SELECT s.name
 FROM student s
 JOIN enrollment e1 ON s.student_id = e1.student_id
 JOIN course c1 ON e1.course_id = c1.course_id
-LEFT JOIN enrollment e2 ON s.student_id = e2.student_id
-LEFT JOIN course c2 ON e2.course_id = c2.course_id AND c2.title = 'IOT'
-WHERE c1.title = 'AI' AND c2.course_id IS NULL;
+WHERE c1.title = 'AI'
+  AND s.student_id NOT IN (
+      SELECT e2.student_id
+      FROM enrollment e2
+      JOIN course c2 ON e2.course_id = c2.course_id
+      WHERE c2.title = 'IOT'
+  );
 
 
 -- Write a trigger to establish the constraint that the students can enroll in a maximum of six courses of their choice
@@ -241,8 +242,8 @@ END;
 
 ### Question 7
 A. The Sapna Book shop wants to keep track of orders of the book. The book is composed of unique id, title, year of publication, single author and single publisher. Each order will be uniquely identified by order-id and may have any number of books. We keep track of the quantity of each book ordered. We store the following details for author and publisher.
--- AUTHOR: unique author-id, name, city, country
--- PUBLISHER: unique publisher-id, name, city, country.
+AUTHOR: unique author-id, name, city, country
+PUBLISHER: unique publisher-id, name, city, country.
 
 -- Relational Schema
 -- author (author_id, name, city, country)
@@ -454,9 +455,7 @@ CREATE TABLE ITEM (
 
 CREATE TABLE SHIPMENT (
     order# INT,
-   
-
- ship_date DATE,
+    ship_date DATE,
     PRIMARY KEY (order#),
     FOREIGN KEY (order#) REFERENCES `ORDER`(order#)
 );
@@ -485,14 +484,15 @@ WHERE c.city = 'specific_city';
 
 -- List the customer names who have not ordered item no. 10
 
-SELECT c.cname
-FROM CUSTOMER c
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM `ORDER` o
-    JOIN ORDER_ITEM oi ON o.order# = oi.order#
-    WHERE c.cust# = o.cust# AND oi.Item# = 10
+SELECT cname
+FROM CUSTOMER
+WHERE custno NOT IN (
+    SELECT custno
+    FROM ORDERS o
+    JOIN ORDER_ITEM oi ON o.orderno = oi.orderno
+    WHERE oi.itemno = 10
 );
+
 
 
 -- Write a deletion trigger, set NULL on deletion of an ITEM
